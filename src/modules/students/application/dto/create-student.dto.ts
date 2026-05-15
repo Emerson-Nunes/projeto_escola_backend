@@ -34,9 +34,10 @@ export class CreateStudentDto {
   @IsString()
   address?: string;
 
-  @ApiProperty()
+  @ApiPropertyOptional()
+  @IsOptional()
   @IsString()
-  enrollmentNumber: string;
+  enrollmentNumber?: string;
 
   @ApiProperty()
   @IsUUID()

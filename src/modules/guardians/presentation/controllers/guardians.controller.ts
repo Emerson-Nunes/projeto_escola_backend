@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, UseGuards, Query, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../../shared/guards/roles.guard';
@@ -19,6 +19,13 @@ export class GuardiansController {
   @ApiOperation({ summary: 'Cadastrar responsável' })
   create(@Body() dto: any) {
     return this.service.create(dto);
+  }
+
+  @Get('me')
+  @Roles(Role.RESPONSAVEL)
+  @ApiOperation({ summary: 'Perfil do responsável logado' })
+  findMe(@Request() req: any) {
+    return this.service.findByUserId(req.user.id);
   }
 
   @Get()

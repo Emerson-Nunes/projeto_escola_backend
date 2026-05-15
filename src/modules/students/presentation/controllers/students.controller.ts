@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../../shared/guards/jwt-auth.guard';
 import { RolesGuard } from '../../../../shared/guards/roles.guard';
@@ -20,6 +20,13 @@ export class StudentsController {
   @ApiOperation({ summary: 'Cadastrar aluno' })
   create(@Body() dto: CreateStudentDto) {
     return this.studentsService.create(dto);
+  }
+
+  @Get('me')
+  @Roles(Role.ALUNO)
+  @ApiOperation({ summary: 'Perfil do aluno logado' })
+  findMe(@Request() req: any) {
+    return this.studentsService.findByUserId(req.user.id);
   }
 
   @Get()

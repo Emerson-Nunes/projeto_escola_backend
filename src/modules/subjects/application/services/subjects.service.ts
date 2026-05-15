@@ -8,7 +8,7 @@ import { PaginationDto } from '../../../../shared/dto/pagination.dto';
 export class SubjectsService {
   constructor(@InjectModel(SubjectModel) private subjectModel: typeof SubjectModel) {}
 
-  create(dto: { name: string; workload?: number }) {
+  create(dto: { name: string; code?: string; workload?: number }) {
     return this.subjectModel.create(dto as any);
   }
 

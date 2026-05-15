@@ -12,6 +12,7 @@ import { GradesModule } from './modules/grades/grades.module';
 import { AttendanceModule } from './modules/attendance/attendance.module';
 import { SchoolConfigModule } from './modules/school-config/school-config.module';
 import { ReportsModule } from './modules/reports/reports.module';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ReportsModule } from './modules/reports/reports.module';
     AttendanceModule,
     SchoolConfigModule,
     ReportsModule,
+    NotificationsModule,
   ],
 })
 export class AppModule {}

@@ -51,6 +51,13 @@ export class GuardiansService {
     return g;
   }
 
+  async findByUserId(userId: string) {
+    const g = await this.guardianModel.findOne({ where: { userId } });
+    if (!g) throw new NotFoundException('Responsável não encontrado');
+    const students = await this.studentModel.findAll({ where: { guardianId: (g as any).id } });
+    return { ...(g as any).toJSON(), students };
+  }
+
   async getStudents(id: string) {
     return this.studentModel.findAll({ where: { guardianId: id } });
   }

@@ -16,24 +16,39 @@ export class StudentsService {
   ) {}
 
   async create(dto: CreateStudentDto) {
+    const year = new Date().getFullYear();
+    const yearCount = await this.studentModel.count({
+      where: { enrollmentNumber: { [Op.like]: `${year}%` } },
+    });
+    const enrollmentNumber = `${year}${String(yearCount + 1).padStart(4, '0')}`;
+
     const user = await this.userModel.create({
       name: dto.name,
       email: dto.email,
-      password: dto.password,
+      password: dto.password || 'Aluno@123',
       role: Role.ALUNO,
     } as any);
 
     return this.studentModel.create({
       userId: (user as any).id,
       name: dto.name,
-      cpf: dto.cpf,
+      cpf: (dto.cpf || '').replace(/\D/g, ''),
       birthDate: dto.birthDate,
       phone: dto.phone,
-      address: dto.address,
-      enrollmentNumber: dto.enrollmentNumber,
+      address: dto.address || '',
+      enrollmentNumber,
       classRoomId: dto.classRoomId,
       guardianId: dto.guardianId,
     } as any);
+  }
+
+  async findByUserId(userId: string) {
+    const student = await this.studentModel.findOne({
+      where: { userId },
+      include: [{ model: ClassRoomModel }],
+    });
+    if (!student) throw new NotFoundException('Aluno não encontrado');
+    return student;
   }
 
   async findAll(pagination: PaginationDto & { classRoomId?: string }) {

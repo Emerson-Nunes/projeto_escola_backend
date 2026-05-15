@@ -8,6 +8,9 @@ export class SubjectModel extends Model {
   @Column({ type: DataType.STRING, allowNull: false, unique: true })
   declare name: string;
 
+  @Column({ type: DataType.STRING, defaultValue: '' })
+  declare code: string;
+
   @Column({ type: DataType.INTEGER, defaultValue: 80 })
   declare workload: number;
 

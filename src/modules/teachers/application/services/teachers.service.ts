@@ -81,6 +81,15 @@ export class TeachersService {
     return this.findOne(id);
   }
 
+  async findByUserId(userId: string) {
+    const t = await this.teacherModel.findOne({
+      where: { userId },
+      include: [{ model: SubjectModel, through: { attributes: [] } }],
+    });
+    if (!t) throw new NotFoundException('Professor não encontrado');
+    return t;
+  }
+
   async remove(id: string) {
     await (await this.findOne(id)).destroy();
     return { message: 'Professor removido' };
