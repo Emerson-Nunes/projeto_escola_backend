@@ -1,0 +1,5 @@
+export enum StudentStatus {
+  APROVADO = 'APROVADO',
+  RECUPERACAO = 'RECUPERACAO',
+  REPROVADO = 'REPROVADO',
+}
