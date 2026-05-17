@@ -43,6 +43,9 @@ Body:
 ### GET /teachers
 Lista todos os professores, incluindo `subjects` de cada um. Ordenação padrão por nome.
 
+### GET /teachers/me
+Retorna o perfil do professor autenticado (role: PROFESSOR). Busca por `userId` do JWT.
+
 ### GET /teachers/:id
 Retorna professor com `subjects` incluídos.
 

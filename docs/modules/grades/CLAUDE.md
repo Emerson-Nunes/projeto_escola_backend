@@ -43,12 +43,15 @@ mediaFinal = (media1 + media2) / 2
 
 ## Resposta do boletim (GET /grades/student/:id/reportcard)
 
+O boletim sempre retorna **todas as disciplinas ativas** do sistema, mesmo sem notas lançadas.
+Disciplinas sem notas têm `bimesters: []`, `media1/media2/mediaFinal: null` e `status: null`.
+
 ```json
 {
   "student": { "id": "...", "name": "João Silva" },
   "subjects": [
     {
-      "subject": { "id": "...", "name": "Matemática" },
+      "subject": { "id": "...", "name": "Matemática", "code": "MAT-M" },
       "bimesters": [
         { "bimester": 1, "value": 7.0, "recoveryValue": null, "finalValue": 7.0 },
         { "bimester": 2, "value": 5.5, "recoveryValue": 7.0, "finalValue": 7.0 },
@@ -59,6 +62,14 @@ mediaFinal = (media1 + media2) / 2
       "media2": 8.5,
       "mediaFinal": 7.75,
       "status": "APROVADO"
+    },
+    {
+      "subject": { "id": "...", "name": "Física", "code": "FIS-M" },
+      "bimesters": [],
+      "media1": null,
+      "media2": null,
+      "mediaFinal": null,
+      "status": null
     }
   ],
   "approvalAverage": 7,

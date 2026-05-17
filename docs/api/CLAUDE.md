@@ -29,24 +29,50 @@ Authorization: Bearer <jwt_token>
 
 ## Students
 
-| Método | Rota                   | Roles            | Descrição           |
-|--------|------------------------|------------------|---------------------|
-| GET    | /students              | ADMIN,PROF       | Listar (paginado)   |
-| GET    | /students/search?q=... | ADMIN,PROF       | Busca parcial       |
-| GET    | /students/:id          | Todos            | Detalhes            |
-| POST   | /students              | ADMIN            | Criar               |
-| PATCH  | /students/:id          | ADMIN            | Atualizar           |
-| DELETE | /students/:id          | ADMIN            | Remover             |
+| Método | Rota                   | Roles            | Descrição                          |
+|--------|------------------------|------------------|------------------------------------|
+| GET    | /students              | ADMIN,PROF       | Listar (paginado)                  |
+| GET    | /students/me           | ALUNO            | Perfil do aluno logado             |
+| GET    | /students/search?q=... | ADMIN,PROF       | Busca parcial                      |
+| GET    | /students/:id          | Todos            | Detalhes                           |
+| POST   | /students              | ADMIN            | Criar (enrollmentNumber auto-gerado)|
+| PATCH  | /students/:id          | ADMIN            | Atualizar                          |
+| DELETE | /students/:id          | ADMIN            | Remover                            |
+
+Nota: `enrollmentNumber` é gerado automaticamente como `{ano}{sequencial 4 dígitos}` (ex: `20240001`). Não enviar no payload.
 
 ## Teachers
 
-| Método | Rota          | Roles      | Descrição |
-|--------|---------------|------------|-----------|
-| GET    | /teachers     | ADMIN,PROF | Listar    |
-| GET    | /teachers/:id | ADMIN,PROF | Detalhes  |
-| POST   | /teachers     | ADMIN      | Criar     |
-| PATCH  | /teachers/:id | ADMIN      | Atualizar |
-| DELETE | /teachers/:id | ADMIN      | Remover   |
+| Método | Rota          | Roles      | Descrição                    |
+|--------|---------------|------------|------------------------------|
+| GET    | /teachers     | ADMIN,PROF | Listar                       |
+| GET    | /teachers/me  | PROFESSOR  | Perfil do professor logado   |
+| GET    | /teachers/:id | ADMIN,PROF | Detalhes                     |
+| POST   | /teachers     | ADMIN      | Criar                        |
+| PATCH  | /teachers/:id | ADMIN      | Atualizar                    |
+| DELETE | /teachers/:id | ADMIN      | Remover                      |
+
+## Guardians
+
+| Método | Rota            | Roles       | Descrição                                       |
+|--------|-----------------|-------------|-------------------------------------------------|
+| GET    | /guardians      | ADMIN       | Listar                                          |
+| GET    | /guardians/me   | RESPONSAVEL | Perfil do responsável logado (inclui `students`)|
+| GET    | /guardians/:id  | ADMIN       | Detalhes                                        |
+| POST   | /guardians      | ADMIN       | Criar                                           |
+| PATCH  | /guardians/:id  | ADMIN       | Atualizar                                       |
+| DELETE | /guardians/:id  | ADMIN       | Remover                                         |
+
+## Notifications
+
+| Método | Rota                 | Roles            | Descrição                           |
+|--------|----------------------|------------------|-------------------------------------|
+| POST   | /notifications       | ADMIN,PROFESSOR  | Criar notificação                   |
+| GET    | /notifications/mine  | Todos            | Notificações para o role do usuário |
+| GET    | /notifications       | ADMIN,PROFESSOR  | Listar todas                        |
+| DELETE | /notifications/:id   | ADMIN,PROFESSOR  | Remover (própria ou ADMIN)          |
+
+Regras de targetRoles: ADMIN pode notificar qualquer role; PROFESSOR não pode notificar ADMIN.
 
 ## ClassRooms
 
