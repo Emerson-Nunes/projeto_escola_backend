@@ -14,6 +14,9 @@ export class SubjectModel extends Model {
   @Column({ type: DataType.INTEGER, defaultValue: 80 })
   declare workload: number;
 
+  @Column({ type: DataType.STRING, defaultValue: '' })
+  declare shift: string;
+
   @Column({ type: DataType.BOOLEAN, defaultValue: true })
   declare isActive: boolean;
 }

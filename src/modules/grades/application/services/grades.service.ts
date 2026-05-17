@@ -11,6 +11,7 @@ export class GradesService {
   constructor(
     @InjectModel(GradeModel) private gradeModel: typeof GradeModel,
     @InjectModel(StudentModel) private studentModel: typeof StudentModel,
+    @InjectModel(SubjectModel) private subjectModel: typeof SubjectModel,
     @InjectModel(SchoolConfigModel) private configModel: typeof SchoolConfigModel,
   ) {}
 
@@ -63,12 +64,19 @@ export class GradesService {
     const approvalAvg = (config as any)?.approvalAverage ?? 7;
     const recoveryAvg = (config as any)?.recoveryAverage ?? 4;
 
-    const grades = await this.gradeModel.findAll({
-      where: { studentId },
-      include: [{ model: SubjectModel }],
-    });
+    const [grades, allSubjects] = await Promise.all([
+      this.gradeModel.findAll({
+        where: { studentId },
+        include: [{ model: SubjectModel }],
+      }),
+      this.subjectModel.findAll({ where: { isActive: true }, order: [['name', 'ASC']] }),
+    ]);
 
     const subjectMap = new Map<string, any>();
+    for (const sub of allSubjects) {
+      subjectMap.set((sub as any).id, { subject: sub, bimesters: [] });
+    }
+
     for (const g of grades) {
       const sid = (g as any).subjectId;
       if (!subjectMap.has(sid)) {
@@ -84,6 +92,10 @@ export class GradesService {
 
     const subjects = Array.from(subjectMap.values()).map((entry) => {
       const b = entry.bimesters;
+      if (b.length === 0) {
+        return { ...entry, media1: null, media2: null, mediaFinal: null, status: null };
+      }
+
       const get = (n: number) => b.find((x: any) => x.bimester === n)?.finalValue ?? 0;
       const media1 = (get(1) + get(2)) / 2;
       const media2 = (get(3) + get(4)) / 2;
