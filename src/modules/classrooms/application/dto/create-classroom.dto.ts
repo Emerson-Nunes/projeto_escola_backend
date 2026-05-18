@@ -1,10 +1,11 @@
-import { IsEnum, IsIn, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsIn, IsNumber, IsString, MaxLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class CreateClassRoomDto {
   @ApiProperty({ example: '1º A' })
   @IsString()
+  @MaxLength(100)
   name: string;
 
   @ApiProperty({ example: 2024 })

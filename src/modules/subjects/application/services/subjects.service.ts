@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { escapeLike } from '../../../../shared/utils/escape-like.util';
 import { SubjectModel } from '../../infrastructure/database/models/subject.model';
 import { PaginationDto } from '../../../../shared/dto/pagination.dto';
 
@@ -15,7 +16,7 @@ export class SubjectsService {
   async findAll(pagination: PaginationDto) {
     const { page = 1, limit = 50, search } = pagination;
     const where: any = {};
-    if (search) where.name = { [Op.like]: `%${search}%` };
+    if (search) where.name = { [Op.like]: `%${escapeLike(search)}%` };
 
     const { rows, count } = await this.subjectModel.findAndCountAll({
       where,

@@ -1,4 +1,4 @@
-import { IsOptional, IsPositive, IsString, Min } from 'class-validator';
+import { IsOptional, IsPositive, IsString, MaxLength, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
@@ -18,5 +18,6 @@ export class PaginationDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(100)
   search?: string;
 }

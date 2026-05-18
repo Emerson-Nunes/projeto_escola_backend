@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
+import { escapeLike } from '../../../../shared/utils/escape-like.util';
 import { TeacherModel } from '../../infrastructure/database/models/teacher.model';
 import { TeacherSubjectModel } from '../../infrastructure/database/models/teacher_subject.model';
 import { UserModel } from '../../../users/infrastructure/database/models/user.model';
@@ -44,7 +45,7 @@ export class TeachersService {
   async findAll(pagination: PaginationDto) {
     const { page = 1, limit = 10, search } = pagination;
     const where: any = {};
-    if (search) where.name = { [Op.like]: `%${search}%` };
+    if (search) where.name = { [Op.like]: `%${escapeLike(search)}%` };
 
     const { rows, count } = await this.teacherModel.findAndCountAll({
       where,

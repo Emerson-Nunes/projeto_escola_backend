@@ -5,6 +5,7 @@ import { ClassRoomModel } from '../../infrastructure/database/models/classroom.m
 import { StudentModel } from '../../../students/infrastructure/database/models/student.model';
 import { CreateClassRoomDto } from '../dto/create-classroom.dto';
 import { PaginationDto } from '../../../../shared/dto/pagination.dto';
+import { escapeLike } from '../../../../shared/utils/escape-like.util';
 
 @Injectable()
 export class ClassRoomsService {
@@ -21,7 +22,7 @@ export class ClassRoomsService {
     const { page = 1, limit = 10, search } = pagination;
     const offset = (page - 1) * limit;
     const where: any = {};
-    if (search) where.name = { [Op.like]: `%${search}%` };
+    if (search) where.name = { [Op.like]: `%${escapeLike(search)}%` };
 
     const { rows, count } = await this.classRoomModel.findAndCountAll({ where, limit, offset, order: [["name", "ASC"]] });
     return { data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) };
@@ -38,7 +39,7 @@ export class ClassRoomsService {
     const { page = 1, limit = 10, search } = pagination;
     const offset = (page - 1) * limit;
     const where: any = { classRoomId: id };
-    if (search) where.name = { [Op.like]: `%${search}%` };
+    if (search) where.name = { [Op.like]: `%${escapeLike(search)}%` };
 
     const { rows, count } = await this.studentModel.findAndCountAll({ where, limit, offset, order: [["name", "ASC"]] });
     return { data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) };

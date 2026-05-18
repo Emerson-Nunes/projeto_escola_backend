@@ -7,6 +7,7 @@ import { ClassRoomModel } from '../../../classrooms/infrastructure/database/mode
 import { CreateStudentDto } from '../dto/create-student.dto';
 import { PaginationDto } from '../../../../shared/dto/pagination.dto';
 import { Role } from '../../../../shared/enums/role.enum';
+import { escapeLike } from '../../../../shared/utils/escape-like.util';
 
 @Injectable()
 export class StudentsService {
@@ -55,7 +56,7 @@ export class StudentsService {
     const { page = 1, limit = 10, search, classRoomId } = pagination;
     const offset = (page - 1) * limit;
     const where: any = {};
-    if (search) where.name = { [Op.like]: `%${search}%` };
+    if (search) where.name = { [Op.like]: `%${escapeLike(search)}%` };
     if (classRoomId) where.classRoomId = classRoomId;
 
     const { rows, count } = await this.studentModel.findAndCountAll({
@@ -90,7 +91,7 @@ export class StudentsService {
 
   async search(q: string) {
     return this.studentModel.findAll({
-      where: { name: { [Op.like]: `%${q}%` } },
+      where: { name: { [Op.like]: `%${escapeLike(q)}%` } },
       include: [{ model: ClassRoomModel, attributes: ['id', 'name'] }],
       limit: 20,
     });
