@@ -10,7 +10,7 @@ export class NotificationsService {
     @InjectModel(NotificationModel) private notifModel: typeof NotificationModel,
   ) {}
 
-  async create(dto: { title: string; message: string; targetRoles: string[] }, user: { id: string; name?: string; role: string }) {
+  async create(dto: { title: string; message: string; targetRoles: string[]; expiresAt?: string }, user: { id: string; name?: string; role: string }) {
     const allowedTargets = this.getAllowedTargets(user.role as Role);
     const denied = dto.targetRoles.filter((r) => !allowedTargets.includes(r as Role));
     if (denied.length) throw new ForbiddenException(`Papel ${denied.join(',')} não permitido para este usuário`);
@@ -21,17 +21,21 @@ export class NotificationsService {
       senderUserId: user.id,
       senderName: user.name || 'Sistema',
       targetRoles: dto.targetRoles.join(','),
+      expiresAt: dto.expiresAt ? new Date(dto.expiresAt) : null,
     } as any);
   }
 
   async findForUser(userRole: string) {
+    const now = new Date();
     const all = await this.notifModel.findAll({
       where: { isActive: true },
       order: [['createdAt', 'DESC']],
     });
     return all.filter((n) => {
       const roles = (n.targetRoles || '').split(',').map((r) => r.trim());
-      return roles.includes(userRole);
+      if (!roles.includes(userRole)) return false;
+      if ((n as any).expiresAt && new Date((n as any).expiresAt) < now) return false;
+      return true;
     });
   }
 

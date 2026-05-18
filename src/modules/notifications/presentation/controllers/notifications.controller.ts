@@ -16,7 +16,7 @@ export class NotificationsController {
   @Post()
   @Roles(Role.ADMIN, Role.PROFESSOR)
   @ApiOperation({ summary: 'Criar notificação' })
-  create(@Body() dto: { title: string; message: string; targetRoles: string[] }, @Request() req: any) {
+  create(@Body() dto: { title: string; message: string; targetRoles: string[]; expiresAt?: string }, @Request() req: any) {
     return this.service.create(dto, req.user);
   }
 

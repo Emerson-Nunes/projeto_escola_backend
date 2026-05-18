@@ -22,11 +22,18 @@ export class ClassRoomsController {
     return this.service.create(dto);
   }
 
+  @Get('valid-years')
+  @Roles(Role.ADMIN, Role.PROFESSOR)
+  @ApiOperation({ summary: 'Anos letivos com turmas válidas' })
+  getValidYears() {
+    return this.service.getValidYears();
+  }
+
   @Get()
   @Roles(Role.ADMIN, Role.PROFESSOR)
   @ApiOperation({ summary: 'Listar turmas' })
-  findAll(@Query() pagination: PaginationDto) {
-    return this.service.findAll(pagination);
+  findAll(@Query() pagination: PaginationDto & { year?: string }) {
+    return this.service.findAll({ ...pagination, year: pagination.year ? parseInt(pagination.year) : undefined });
   }
 
   @Get(':id')

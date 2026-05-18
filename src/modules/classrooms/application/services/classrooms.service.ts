@@ -18,14 +18,41 @@ export class ClassRoomsService {
     return this.classRoomModel.create(dto as any);
   }
 
-  async findAll(pagination: PaginationDto) {
-    const { page = 1, limit = 10, search } = pagination;
+  async findAll(pagination: PaginationDto & { year?: number }) {
+    const { page = 1, limit = 10, search, year } = pagination;
     const offset = (page - 1) * limit;
     const where: any = {};
     if (search) where.name = { [Op.like]: `%${escapeLike(search)}%` };
+    if (year) where.year = year;
 
     const { rows, count } = await this.classRoomModel.findAndCountAll({ where, limit, offset, order: [["name", "ASC"]] });
     return { data: rows, total: count, page, limit, totalPages: Math.ceil(count / limit) };
+  }
+
+  async getValidYears(): Promise<number[]> {
+    const result = await this.classRoomModel.findAll({
+      attributes: ['year'],
+      group: ['year'],
+      order: [['year', 'DESC']],
+      raw: true,
+      include: [{
+        model: this.studentModel,
+        attributes: [],
+        required: true,
+      }],
+    });
+
+    if (result.length === 0) {
+      const allRooms = await this.classRoomModel.findAll({
+        attributes: ['year'],
+        group: ['year'],
+        order: [['year', 'DESC']],
+        raw: true,
+      });
+      return allRooms.map((r: any) => r.year);
+    }
+
+    return result.map((r: any) => r.year);
   }
 
   async findOne(id: string) {

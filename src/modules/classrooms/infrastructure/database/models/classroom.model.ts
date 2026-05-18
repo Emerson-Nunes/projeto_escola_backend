@@ -1,4 +1,5 @@
 import { Column, Model, Table, DataType, HasMany } from 'sequelize-typescript';
+import { StudentModel } from '../../../../students/infrastructure/database/models/student.model';
 
 @Table({ tableName: 'classrooms', timestamps: true })
 export class ClassRoomModel extends Model {
@@ -31,4 +32,7 @@ export class ClassRoomModel extends Model {
 
   @Column({ type: DataType.BOOLEAN, defaultValue: true })
   declare isActive: boolean;
+
+  @HasMany(() => StudentModel)
+  declare students: StudentModel[];
 }

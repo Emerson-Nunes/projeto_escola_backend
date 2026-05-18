@@ -22,4 +22,7 @@ export class NotificationModel extends Model {
 
   @Column({ type: DataType.BOOLEAN, defaultValue: true })
   declare isActive: boolean;
+
+  @Column({ type: DataType.DATE, allowNull: true })
+  declare expiresAt: Date | null;
 }
