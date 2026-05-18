@@ -5,6 +5,7 @@ import { RolesGuard } from '../../../../shared/guards/roles.guard';
 import { Roles } from '../../../../shared/decorators/roles.decorator';
 import { Role } from '../../../../shared/enums/role.enum';
 import { SubjectsService } from '../../application/services/subjects.service';
+import { CreateSubjectDto } from '../../application/dto/create-subject.dto';
 import { PaginationDto } from '../../../../shared/dto/pagination.dto';
 
 @ApiTags('Subjects')
@@ -17,7 +18,7 @@ export class SubjectsController {
   @Post()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Criar disciplina' })
-  create(@Body() dto: { name: string; workload?: number }) {
+  create(@Body() dto: CreateSubjectDto) {
     return this.service.create(dto);
   }
 
@@ -36,7 +37,7 @@ export class SubjectsController {
   @Patch(':id')
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Atualizar disciplina' })
-  update(@Param('id') id: string, @Body() dto: any) {
+  update(@Param('id') id: string, @Body() dto: Partial<CreateSubjectDto>) {
     return this.service.update(id, dto);
   }
 

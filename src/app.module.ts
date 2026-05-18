@@ -31,6 +31,7 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
         database: config.get('DB_NAME', 'escola_db'),
         autoLoadModels: true,
         synchronize: true,
+        sync: { alter: true },
         logging: false,
       }),
       inject: [ConfigService],
