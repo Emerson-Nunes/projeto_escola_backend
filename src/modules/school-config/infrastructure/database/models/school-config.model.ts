@@ -16,4 +16,19 @@ export class SchoolConfigModel extends Model {
 
   @Column({ type: DataType.INTEGER, defaultValue: new Date().getFullYear() })
   declare currentYear: number;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  declare phone: string;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  declare email: string;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  declare address: string;
+
+  @Column({ type: DataType.STRING, allowNull: true })
+  declare directorName: string;
+
+  @Column({ type: DataType.TEXT, allowNull: true })
+  declare institutionalInfo: string;
 }

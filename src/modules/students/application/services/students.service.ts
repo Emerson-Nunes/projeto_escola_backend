@@ -96,4 +96,11 @@ export class StudentsService {
       limit: 20,
     });
   }
+
+  async findByGuardianId(guardianId: string) {
+    return this.studentModel.findAll({
+      where: { guardianId },
+      include: [{ model: ClassRoomModel, attributes: ['id', 'name'] }],
+    });
+  }
 }

@@ -28,6 +28,14 @@ export class GuardiansController {
     return this.service.findByUserId(req.user.id);
   }
 
+  @Get('me/students')
+  @Roles(Role.RESPONSAVEL)
+  @ApiOperation({ summary: 'Alunos vinculados ao responsável logado' })
+  async findMyStudents(@Request() req: any) {
+    const guardian = await this.service.findByUserId(req.user.id);
+    return this.service.getStudents((guardian as any).id);
+  }
+
   @Get()
   @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Listar responsáveis' })

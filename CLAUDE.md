@@ -236,3 +236,109 @@ Usado em `TeacherFormPage` e `GuardianFormPage`.
 `src/components/layout/Sidebar.tsx`:
 - Turmas e Disciplinas: visíveis apenas para ADMIN e PROFESSOR
 - Alunos: visível apenas para ADMIN e PROFESSOR
+- Notificações: visível apenas para ADMIN e PROFESSOR
+
+### Notificações
+
+Módulo `NotificationsModule` em `backend/src/modules/notifications/`. ADMIN pode notificar todos os roles; PROFESSOR não pode notificar ADMIN. ALUNO e RESPONSAVEL só leem (`GET /notifications/mine`). O `Navbar` consulta `/notifications/mine` a cada 60s e mostra contador no ícone de sino.
+
+### Matrícula automática de aluno
+
+`StudentsService.create()` gera `enrollmentNumber` automaticamente como `{ano}{sequencial 4 dígitos}` usando contagem de matrículas do ano corrente no banco (não o relógio local). Não enviar `enrollmentNumber` no payload — campo ignorado/optional no DTO.
+
+### Boletim inclui todas as disciplinas ativas
+
+`GradesService.getReportCard()` sempre busca **todas as disciplinas ativas** e as inclui no resultado. Disciplinas sem notas aparecem com `mediaFinal: null` e `status: null` — alunos recém-criados já veem todas as matérias no dashboard sem necessidade de criar registros de nota.
+
+### Segurança — defesa em profundidade
+
+Camadas de segurança implementadas no backend (detalhes em `docs/architecture/CLAUDE.md`):
+
+- **helmet**: headers HTTP (CSP, HSTS, X-Frame-Options, X-Content-Type-Options, etc.)
+- **ThrottlerGuard global**: 120 req/min por IP; login limitado a 5 req/min (HTTP 429 após isso)
+- **CORS restrito**: `CORS_ORIGIN` env var, não `*`
+- **ValidationPipe**: `whitelist: true` + `forbidNonWhitelisted: true` — rejeita campos extras
+- **@MaxLength()** em todos os DTOs de string + `PaginationDto.search`
+- **escapeLike()** em `shared/utils/escape-like.util.ts` — escapa wildcards `%` e `_` antes de `Op.like`
+- **SQL Injection**: já protegido pelo ORM (Sequelize usa prepared statements em 100% das operações)
+
+### JWT invalida sessão ao deletar usuário
+
+`JwtStrategy.validate()` consulta o `UserModel` a cada request. Se o usuário não existe ou `isActive = false`, lança `UnauthorizedException`. Isso garante que sessões de usuários deletados do banco expirem imediatamente sem aguardar o TTL do JWT.
+
+### Código de disciplina com turno (M/V)
+
+`SubjectFormPage` possui seletor de turno. A função `autoCode(name, shift)` gera o código base (3 letras de cada palavra) e adiciona sufixo: `-M` para MANHA, `-V` para TARDE. O campo `shift` é persistido no `SubjectModel`. Código é editável pelo usuário após geração automática.
+
+### Horários de turma
+
+`ClassRoomModel` possui campos `startTime`, `breakStartTime`, `breakEndTime`, `endTime` (strings HH:MM). Editáveis via `ClassroomFormPage` em layout de duas colunas.
+
+### Regra obrigatória — DTOs completos com class-validator
+
+`ValidationPipe({ forbidNonWhitelisted: true })` rejeita campos não declarados **somente** quando o `@Body()` do controller usa uma classe com decorators de `class-validator`. Tipos inline ou `any` ignoram validação.
+
+**Obrigatório**: todo `@Body()` deve usar classe DTO. Se o frontend enviar um campo novo (ex: campo de horário), ele **deve** estar declarado no DTO com `@IsOptional()` — caso contrário retorna HTTP 400 imediatamente.
+
+### Sincronização automática do schema (Sequelize sync alter)
+
+`app.module.ts` configura `synchronize: true, sync: { alter: true }`. Ao iniciar, o backend adiciona automaticamente colunas novas às tabelas existentes. Colunas removidas do model **não** são apagadas do banco.
+
+Se uma nova coluna for adicionada ao model mas a tabela já existir sem ela, **basta reiniciar o backend** — o alter rodará. Não é necessário `ALTER TABLE` manual nesse projeto (exceto durante desenvolvimento quando o backend não está rodando com a versão nova).
+
+### Visualização por perfil — Notas e Frequência
+
+`GradeLaunchPage` em `/grades` renderiza conteúdo diferente por role:
+- ADMIN/PROFESSOR: lançamento de notas com inputs
+- ALUNO: boletim próprio (somente leitura) + botão "Baixar Boletim PDF"
+- RESPONSAVEL: seletor de aluno vinculado + boletim (somente leitura) + botão "Baixar Boletim PDF"
+
+`AttendancePage` em `/attendance` renderiza diferente por role:
+- ADMIN/PROFESSOR: registro de chamada
+- ALUNO: frequência própria (somente leitura) + botão "Baixar Frequência PDF"
+- RESPONSAVEL: seletor de aluno + frequência (somente leitura) + botão "Baixar Frequência PDF"
+
+Menu "Relatórios" visível apenas para ADMIN e PROFESSOR.
+
+### Loading global
+
+`GlobalLoaderProvider` em `components/ui/GlobalLoader.tsx` expõe `useGlobalLoader()` com `showLoader(key)` / `hideLoader(key)`. Exibe overlay com spinner enquanto qualquer key estiver ativa.
+
+### Transição de tema e páginas
+
+Tema: `ThemeContext` aplica classe `theme-transitioning` no `html` durante a troca, ativando CSS transitions de 350ms para background-color/color/border-color.
+
+Páginas: `PageTransition` em `components/ui/PageTransition.tsx` aplica fade + translateY ao trocar de rota.
+
+### Menu lateral mobile
+
+Sidebar é overlay no mobile (z-50, translate-x). O botão hamburger (ícone `Menu`) fica no `Navbar` antes do título. `AppLayout` gerencia o estado `mobileSidebarOpen` e passa callback para Navbar e Sidebar.
+
+### Contato com a direção
+
+Rota `/contact` (`ContactPage`) disponível para todos os roles autenticados. Exibe dados de `GET /school-config`: nome da escola, telefone, email, endereço, diretor, informações institucionais. Admin configura esses dados na aba "Informações da Direção" em `/settings`.
+
+---
+
+## Decisões de Arquitetura — Backend
+
+### Validação de notas
+Endpoint `POST /grades` e `POST /grades/bulk` validam `value` e `recoveryValue` com `@Min(0)` e `@Max(10)`. Backend rejeita notas fora do intervalo com HTTP 400.
+
+### Endpoints de relatórios
+Todos os endpoints de PDF/XLSX estão em `ReportsController`:
+- `GET /reports/report-card/:studentId?schoolYear=N` — boletim PDF (ADMIN, PROFESSOR, ALUNO, RESPONSAVEL)
+- `GET /reports/student/:studentId/attendance` — frequência PDF individual (ADMIN, PROFESSOR, ALUNO, RESPONSAVEL)
+- `GET /reports/class/:classroomId?schoolYear=N` — relatório PDF de turma (ADMIN, PROFESSOR)
+- `GET /reports/grades-sheet/:classroomId?schoolYear=N` — planilha XLSX de notas (ADMIN, PROFESSOR)
+- `GET /reports/attendance-sheet?classRoomId=&subjectId=&startDate=&endDate=` — planilha XLSX de frequência (ADMIN, PROFESSOR)
+
+### Anos letivos válidos
+`GET /grades/valid-years` retorna array de anos com pelo menos uma nota registrada, em ordem decrescente. Usado pelo frontend para evitar mostrar anos sem dados.
+
+### Configuração de contato
+`SchoolConfigModel` possui campos adicionais: `phone`, `email`, `address`, `directorName`, `institutionalInfo`. Configuráveis via `PUT /school-config` (ADMIN only). Consumidos pela página "Contato com a Direção" (todas as roles).
+
+### Alunos por responsável
+`GET /guardians/me/students` retorna os alunos vinculados ao responsável autenticado.
+`GET /students/by-guardian/:guardianId` retorna alunos com esse guardianId.

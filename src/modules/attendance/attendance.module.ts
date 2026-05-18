@@ -10,5 +10,6 @@ import { AttendanceService } from './application/services/attendance.service';
   imports: [SequelizeModule.forFeature([AttendanceModel, StudentModel, SubjectModel])],
   controllers: [AttendanceController],
   providers: [AttendanceService],
+  exports: [AttendanceService],
 })
 export class AttendanceModule {}

@@ -44,6 +44,13 @@ export class StudentsController {
     return this.studentsService.search(q);
   }
 
+  @Get('by-guardian/:guardianId')
+  @Roles(Role.ADMIN, Role.PROFESSOR, Role.RESPONSAVEL)
+  @ApiOperation({ summary: 'Alunos do responsável' })
+  findByGuardian(@Param('guardianId') guardianId: string) {
+    return this.studentsService.findByGuardianId(guardianId);
+  }
+
   @Get(':id')
   @Roles(Role.ADMIN, Role.PROFESSOR, Role.ALUNO, Role.RESPONSAVEL)
   @ApiOperation({ summary: 'Detalhes do aluno' })

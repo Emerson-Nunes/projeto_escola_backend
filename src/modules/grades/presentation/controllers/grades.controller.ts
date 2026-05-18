@@ -5,6 +5,8 @@ import { RolesGuard } from '../../../../shared/guards/roles.guard';
 import { Roles } from '../../../../shared/decorators/roles.decorator';
 import { Role } from '../../../../shared/enums/role.enum';
 import { GradesService } from '../../application/services/grades.service';
+import { UpsertGradeDto } from '../../application/dto/upsert-grade.dto';
+import { BulkUpsertGradesDto } from '../../application/dto/bulk-upsert-grades.dto';
 
 @ApiTags('Grades')
 @ApiBearerAuth()
@@ -13,11 +15,32 @@ import { GradesService } from '../../application/services/grades.service';
 export class GradesController {
   constructor(private readonly service: GradesService) {}
 
+  @Get('valid-years')
+  @Roles(Role.ADMIN, Role.PROFESSOR)
+  @ApiOperation({ summary: 'Anos letivos com notas cadastradas' })
+  getValidYears() {
+    return this.service.getValidYears();
+  }
+
+  @Get('valid-years/classroom/:classRoomId')
+  @Roles(Role.ADMIN, Role.PROFESSOR)
+  @ApiOperation({ summary: 'Anos letivos com notas para a turma' })
+  getValidYearsForClassroom(@Param('classRoomId') classRoomId: string) {
+    return this.service.getValidYearsForClassroom(classRoomId);
+  }
+
   @Post()
   @Roles(Role.ADMIN, Role.PROFESSOR)
   @ApiOperation({ summary: 'Lançar ou atualizar nota' })
-  upsert(@Body() dto: any) {
+  upsert(@Body() dto: UpsertGradeDto) {
     return this.service.upsertGrade(dto);
+  }
+
+  @Post('bulk')
+  @Roles(Role.ADMIN, Role.PROFESSOR)
+  @ApiOperation({ summary: 'Lançar ou atualizar notas em lote' })
+  bulkUpsert(@Body() dto: BulkUpsertGradesDto) {
+    return this.service.bulkUpsert(dto);
   }
 
   @Get('student/:id')

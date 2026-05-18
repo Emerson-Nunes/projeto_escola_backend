@@ -5,6 +5,7 @@ import { StudentModel } from '../../../students/infrastructure/database/models/s
 import { SubjectModel } from '../../../subjects/infrastructure/database/models/subject.model';
 import { SchoolConfigModel } from '../../../school-config/infrastructure/database/models/school-config.model';
 import { StudentStatus } from '../../../../shared/enums/status.enum';
+import { BulkUpsertGradesDto } from '../dto/bulk-upsert-grades.dto';
 
 @Injectable()
 export class GradesService {
@@ -117,5 +118,43 @@ export class GradesService {
       where: { classRoomId },
       include: [{ model: StudentModel }, { model: SubjectModel }],
     });
+  }
+
+  async bulkUpsert(dto: BulkUpsertGradesDto) {
+    const results: GradeModel[] = [];
+    for (const item of dto.grades) {
+      const grade = await this.upsertGrade({
+        studentId: item.studentId,
+        subjectId: dto.subjectId,
+        classRoomId: dto.classRoomId,
+        schoolYear: dto.schoolYear,
+        bimester: dto.bimester,
+        value: item.value,
+        recoveryValue: item.recoveryValue,
+      });
+      results.push(grade);
+    }
+    return results;
+  }
+
+  async getValidYears(): Promise<number[]> {
+    const rows = await this.gradeModel.findAll({
+      attributes: ['schoolYear'],
+      group: ['schoolYear'],
+      order: [['schoolYear', 'DESC']],
+      raw: true,
+    });
+    return rows.map((r: any) => r.schoolYear);
+  }
+
+  async getValidYearsForClassroom(classRoomId: string): Promise<number[]> {
+    const rows = await this.gradeModel.findAll({
+      attributes: ['schoolYear'],
+      where: { classRoomId },
+      group: ['schoolYear'],
+      order: [['schoolYear', 'DESC']],
+      raw: true,
+    });
+    return rows.map((r: any) => r.schoolYear);
   }
 }
